@@ -3,11 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		231EA9AF23A026F900CB0E51 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231EA9AE23A026F900CB0E51 /* main.swift */; };
+		231EA9B723A0276300CB0E51 /* Files in Frameworks */ = {isa = PBXBuildFile; productRef = 231EA9B623A0276300CB0E51 /* Files */; };
+		231EA9BA23A0279100CB0E51 /* ShellOut in Frameworks */ = {isa = PBXBuildFile; productRef = 231EA9B923A0279100CB0E51 /* ShellOut */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -32,6 +34,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				231EA9BA23A0279100CB0E51 /* ShellOut in Frameworks */,
+				231EA9B723A0276300CB0E51 /* Files in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +82,10 @@
 			dependencies = (
 			);
 			name = Winery;
+			packageProductDependencies = (
+				231EA9B623A0276300CB0E51 /* Files */,
+				231EA9B923A0279100CB0E51 /* ShellOut */,
+			);
 			productName = Winery;
 			productReference = 231EA9AB23A026F900CB0E51 /* Winery */;
 			productType = "com.apple.product-type.tool";
@@ -106,6 +114,10 @@
 				Base,
 			);
 			mainGroup = 231EA9A223A026F900CB0E51;
+			packageReferences = (
+				231EA9B523A0276200CB0E51 /* XCRemoteSwiftPackageReference "Files" */,
+				231EA9B823A0279100CB0E51 /* XCRemoteSwiftPackageReference "ShellOut" */,
+			);
 			productRefGroup = 231EA9AC23A026F900CB0E51 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -284,6 +296,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		231EA9B523A0276200CB0E51 /* XCRemoteSwiftPackageReference "Files" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/JohnSundell/Files.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.0.2;
+			};
+		};
+		231EA9B823A0279100CB0E51 /* XCRemoteSwiftPackageReference "ShellOut" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/JohnSundell/ShellOut.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.2.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		231EA9B623A0276300CB0E51 /* Files */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 231EA9B523A0276200CB0E51 /* XCRemoteSwiftPackageReference "Files" */;
+			productName = Files;
+		};
+		231EA9B923A0279100CB0E51 /* ShellOut */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 231EA9B823A0279100CB0E51 /* XCRemoteSwiftPackageReference "ShellOut" */;
+			productName = ShellOut;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 231EA9A323A026F900CB0E51 /* Project object */;
 }
