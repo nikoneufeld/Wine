@@ -24,7 +24,7 @@ struct Package: Codable {
     var installationCommands = [String]()
     var source = String()
     var testCommands = [String]()
-    var dependecyFiles = [String()]
+    var dependecyFiles = [String]()
 }
 let pkgtest = Package()
 var templateJson = String(data: try JSONEncoder().encode(pkgtest), encoding: .utf8)
@@ -32,10 +32,23 @@ extension CommandLine {
     static var commands: [String] {
         get {
             var args = CommandLine.arguments
+            guard args.count > 1 else {return ["NOCOMMAND"]}
             args.removeFirst()
             return args
         }
     }
+}
+func get(_ pkg: String) throws {
+    if Folder.home.containsSubfolder(named: "Winery") {
+        print("Updating 🍷🍷🍷🍷🍷")
+        try shellOut(to: ["git fetch", "git pull"], at: "~/")
+        
+    } else {
+        print("Cloning 🍷🍷🍷🍷🍷")
+        try shellOut(to: .gitClone(url: URL(string: "https://github.com/jakobneufeld/Winery.git")!),at: "~/")
+        
+    }
+    print("Done Updating packages! 🍷🍷🍷🍷🍷")
 }
 func extractWineFile(_ currentDir: Folder = Folder.current) -> Package {
 
@@ -92,15 +105,38 @@ func install(package pkg: Package)  {
             print("Done 🍷🍷🍷!!!")
             
         } catch {
-            print("Error occured \(error.localizedDescription)")
+            print("Wine is sour!!")
         }
 }
 
 func test(package pkg: Package) {
     print("Testing 🍷🍷🍷🍷🍷🍷🍷🍷🍷")
+    var commands = [String]()
+    commands.append(contentsOf: pkg.testCommands)
+    do {
+        try shellOut(to: commands)
+    } catch {
+        print(" Wine is SOUR! Test Failed. Exact error is \(error)   ❌")
+    }
+    print("Test Complete 🍷🍷🍷🍷🍷🍷🍷🍷🍷 ✅")
 }
+
+func build(package pkg: Package) {
+        print("Building 🍷🍷🍷🍷🍷🍷🍷🍷🍷")
+        var commands = [String]()
+        commands.append(contentsOf: pkg.installationCommands)
+        do {
+            try shellOut(to: commands)
+        } catch {
+            print(" Wine is SOUR! Buld Failed. Exact error is \(error)   ❌")
+            exit(1)
+        }
+        print("Build Complted🍷🍷🍷🍷🍷🍷🍷🍷🍷 ✅")
+}
+
+
 // MARK: Action!!
-print("Winery. At your service! 🍷🍷🍷🍷🍷🍷🍷🍷🍷 version 6")
+print("Winery. At your service! 🍷🍷🍷🍷🍷🍷🍷🍷🍷 version 1")
 if CommandLine.commands[0] == "install" {
          print("Starting Installlation 🍷🍷🍷🍷🍷 ")
         let pkg = extractWineFile()
@@ -110,10 +146,32 @@ if CommandLine.commands[0] == "install" {
     var dir = Folder.current
     var file = try dir.createFile(named: "Wine")
     try file.write(templateJson^^)
-} else if CommandLine.commands[0].count != 1  {
-    print("Usgae Blalalala")
-}
+} else if CommandLine.commands[0] == "test" {
+    let pkg = extractWineFile()
+    test(package: pkg)
+} else if CommandLine.commands[0] == "build" {
+    let pkg = extractWineFile()
+    build(package: pkg)
+} else if  CommandLine.commands[0] == "get"{
+    try get("DJKjkljkl")
+} else {
+    print("""
+Wine, A package manager
+--------------------------
+Here are the commands:
+build: Builds and runs the installation commands. Does not build the dependecies.
+install: Same thing as build but clones the git repo first. Unlike the other comands. it also installs all its dependecies.
+test: Same thing as build but runs the test commands not the installation commands.
+new: Creates a wine file for you with the template.
+To create a package your self, use the `new` command.
+Synopsis:
+wine [command] [arg].
 
+Jakob Neufeld
+
+"""
+    )
+}
 
 
 
