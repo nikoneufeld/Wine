@@ -41,11 +41,11 @@ extension CommandLine {
 func get(_ pkg: String) throws {
     if Folder.home.containsSubfolder(named: "Winery") {
         print("Updating 🍷🍷🍷🍷🍷")
-        try shellOut(to: ["git fetch", "git pull"], at: "~/")
+        try shellOut(to: ["git fetch", "git pull"], at: "~/Winery")
         
     } else {
         print("Cloning 🍷🍷🍷🍷🍷")
-        try shellOut(to: .gitClone(url: URL(string: "https://github.com/jakobneufeld/Winery.git")!),at: "~/")
+        try shellOut(to: .gitClone(url: URL(string: "https://github.com/jakobneufeld/Winery.git")!),at: "~/Winery")
         
     }
     print("Done Updating packages! 🍷🍷🍷🍷🍷")
@@ -75,12 +75,15 @@ func extractWineFile(_ currentDir: Folder = Folder.current) -> Package {
 
 func install(package pkg: Package)  {
         do {
+            if !Folder.home.containsSubfolder(named: "Cave") {
+                try Folder.home.createSubfolder(named: "Cave")
+            }
             print("Cloning 🍷🍷🍷🍷🍷")
-        try shellOut(to: .gitClone(url: URL(string: pkg.source)^^))
+            try shellOut(to: .gitClone(url: URL(string: pkg.source)^^), at: "~/Cave")
             var installtionCommands = ["cd \(pkg.name)"]
             installtionCommands.append(contentsOf: pkg.installationCommands)
             print("Installing 🍷🍷🍷🍷🍷🍷🍷🍷🍷")
-            try shellOut(to: installtionCommands)
+            try shellOut(to: installtionCommands, at: "~/Cave")
             if !pkg.dependecyFiles.isEmpty {
                 print("Cloning Dependencies 🍷🍷🍷🍷🍷🍷 ")
                 for urlStr in pkg.dependecyFiles {
@@ -89,12 +92,17 @@ func install(package pkg: Package)  {
                     let gitUrl = subStr.prefix {
                         $0 != "."
                     }
-                    try shellOut(to: .gitClone(url: URL(string: urlStr)^^))
-                    var commands = ["cd \(String(gitUrl))"]
-                    var pkgPath = Folder.current.path
+                    if try Folder.home.subfolder(named: "Cave").containsSubfolder(named: String(gitUrl)) {
+                                print("Package \(gitUrl) already exists")
+                        continue
+                        }
+                    try shellOut(to: .gitClone(url: URL(string: urlStr)^^),at: "~/Cave")
+                  
+                    var pkgPath = try Folder.home.subfolder(named: "Cave").path
                     pkgPath.append(contentsOf: "\(gitUrl)")
                     print(pkgPath)
                     let pkg = extractWineFile(try Folder(path: pkgPath))
+                     var commands = ["cd \(pkgPath)"]
                     commands.append(contentsOf: pkg.installationCommands)
                     try shellOut(to: commands)
                     print("Resolved \(pkg.name)")
@@ -105,7 +113,7 @@ func install(package pkg: Package)  {
             print("Done 🍷🍷🍷!!!")
             
         } catch {
-            print("Wine is sour!!")
+            print("Wine is sour!! \(error)")
         }
 }
 
