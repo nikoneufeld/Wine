@@ -38,10 +38,10 @@ extension CommandLine {
         }
     }
 }
-func get(_ pkg: String) throws {
+func get(_ pkg: String)  throws {
     if Folder.home.containsSubfolder(named: "Winery") {
         print("Updating 🍷🍷🍷🍷🍷")
-        try shellOut(to: ["git fetch", "git pull"], at: "~/")
+        try shellOut(to: ["git fetch", "git pull"], at: "~/Winery")
         
     } else {
         print("Cloning 🍷🍷🍷🍷🍷")
@@ -49,23 +49,36 @@ func get(_ pkg: String) throws {
         
     }
     print("Done Updating packages! 🍷🍷🍷🍷🍷")
-}
+    print("Getting Package \(pkg)🍷🍷🍷🍷🍷")
+    
+    do {
+        let dir = try Folder.home.subfolder(named: "Winery").subfolder(named: pkg)
+        print("Found Package 🍷🍷🍷🍷🍷")
+        install(package: extractWineFile(dir))
+        
+    } catch {
+        print("Wine is sour. Package does not exist 🍷🍷🍷🍷🍷")
+        exit(1)
+    }
+  }
 func extractWineFile(_ currentDir: Folder = Folder.current) -> Package {
 
     var jsonFile: File
     var json: String
     var jsonData: Data
     do {
+        print("Found Winefile")
         jsonFile = try currentDir.file(named: "Wine")
         json = try jsonFile.readAsString()
         jsonData = json.data(using: .utf8)!
         
     } catch {
-            print("No Wine File")
+            print(" Wine is SOUR No Wine File ❌❌")
             exit(1)
     }
     do {
         let decoder = JSONDecoder()
+        print("Parsing Winefile")
         return try decoder.decode(Package.self, from: jsonData)
     } catch {
         print("Invalid Json")
@@ -105,7 +118,7 @@ func install(package pkg: Package)  {
             print("Done 🍷🍷🍷!!!")
             
         } catch {
-            print("Wine is sour!!")
+            print("Wine is sour!! \(error)")
         }
 }
 
@@ -143,8 +156,8 @@ if CommandLine.commands[0] == "install" {
         install(package: pkg)
 } else if CommandLine.commands[0] == "new" {
     print("Creating File🍷🍷🍷🍷🍷🍷🍷🍷🍷")
-    var dir = Folder.current
-    var file = try dir.createFile(named: "Wine")
+    let dir = Folder.current
+    let file = try dir.createFile(named: "Wine")
     try file.write(templateJson^^)
 } else if CommandLine.commands[0] == "test" {
     let pkg = extractWineFile()
@@ -153,7 +166,12 @@ if CommandLine.commands[0] == "install" {
     let pkg = extractWineFile()
     build(package: pkg)
 } else if  CommandLine.commands[0] == "get"{
-    try get("DJKjkljkl")
+    do {
+        try get(CommandLine.commands[1])
+    } catch {
+        print("Whoops an  error ouccured. \(error.localizedDescription)")
+    }
+    
 } else {
     print("""
 Wine, A package manager
