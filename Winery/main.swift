@@ -39,28 +39,28 @@ extension CommandLine {
     }
 }
 func get(_ pkg: String)  throws {
-    if Folder.home.containsSubfolder(named: "Winery") {
-        print("Updating 🍷🍷🍷🍷🍷")
-        try shellOut(to: ["git fetch", "git pull"], at: "~/Winery")
-        
-    } else {
-        print("Cloning 🍷🍷🍷🍷🍷")
-        try shellOut(to: .gitClone(url: URL(string: "https://github.com/jakobneufeld/Winery.git")!),at: "~/")
-        
-    }
-    print("Done Updating packages! 🍷🍷🍷🍷🍷")
-    print("Getting Package \(pkg)🍷🍷🍷🍷🍷")
-    
-    do {
-        let dir = try Folder.home.subfolder(named: "Winery").subfolder(named: pkg)
-        print("Found Package 🍷🍷🍷🍷🍷")
-        install(package: extractWineFile(dir))
-        
-    } catch {
-        print("Wine is sour. Package does not exist 🍷🍷🍷🍷🍷")
-        exit(1)
-    }
+  if Folder.home.containsSubfolder(named: "Winery") {
+      print("Updating 🍷🍷🍷🍷🍷")
+      try shellOut(to: ["git fetch", "git pull"], at: "~/Winery")
+      
+  } else {
+      print("Cloning 🍷🍷🍷🍷🍷")
+      try shellOut(to: .gitClone(url: URL(string: "https://github.com/jakobneufeld/Winery.git")!),at: "~/")
+      
   }
+  print("Done Updating packages! 🍷🍷🍷🍷🍷")
+  print("Getting Package \(pkg)🍷🍷🍷🍷🍷")
+  
+  do {
+      let dir = try Folder.home.subfolder(named: "Winery").subfolder(named: pkg)
+      print("Found Package 🍷🍷🍷🍷🍷")
+      install(package: extractWineFile(dir))
+      
+  } catch {
+      print("Wine is sour. Package does not exist 🍷🍷🍷🍷🍷")
+      exit(1)
+  }
+}
 func extractWineFile(_ currentDir: Folder = Folder.current) -> Package {
 
     var jsonFile: File
@@ -88,12 +88,19 @@ func extractWineFile(_ currentDir: Folder = Folder.current) -> Package {
 
 func install(package pkg: Package)  {
         do {
+            if !Folder.home.containsSubfolder(named: "Cave") {
+                try Folder.home.createSubfolder(named: "Cave")
+            }
+            if try Folder.home.subfolder(named: "Cave").containsSubfolder(named: pkg.name) {
+                print("Package \(pkg.name) already exists 🍷🍷🍷🍷🍷")
+                return
+            }
             print("Cloning 🍷🍷🍷🍷🍷")
-        try shellOut(to: .gitClone(url: URL(string: pkg.source)^^))
+            try shellOut(to: .gitClone(url: URL(string: pkg.source)^^), at: "~/Cave")
             var installtionCommands = ["cd \(pkg.name)"]
             installtionCommands.append(contentsOf: pkg.installationCommands)
             print("Installing 🍷🍷🍷🍷🍷🍷🍷🍷🍷")
-            try shellOut(to: installtionCommands)
+            try shellOut(to: installtionCommands, at: "~/Cave")
             if !pkg.dependecyFiles.isEmpty {
                 print("Cloning Dependencies 🍷🍷🍷🍷🍷🍷 ")
                 for urlStr in pkg.dependecyFiles {
@@ -102,12 +109,16 @@ func install(package pkg: Package)  {
                     let gitUrl = subStr.prefix {
                         $0 != "."
                     }
-                    try shellOut(to: .gitClone(url: URL(string: urlStr)^^))
-                    var commands = ["cd \(String(gitUrl))"]
-                    var pkgPath = Folder.current.path
+                    if try Folder.home.subfolder(named: "Cave").containsSubfolder(named: String(gitUrl)) {
+                                print("Package \(gitUrl) already exists")
+                        continue
+                        }
+                    try shellOut(to: .gitClone(url: URL(string: urlStr)^^),at: "~/Cave")
+                  
+                    var pkgPath = try Folder.home.subfolder(named: "Cave").path
                     pkgPath.append(contentsOf: "\(gitUrl)")
-                    print(pkgPath)
                     let pkg = extractWineFile(try Folder(path: pkgPath))
+                     var commands = ["cd \(pkgPath)"]
                     commands.append(contentsOf: pkg.installationCommands)
                     try shellOut(to: commands)
                     print("Resolved \(pkg.name)")
@@ -166,12 +177,11 @@ if CommandLine.commands[0] == "install" {
     let pkg = extractWineFile()
     build(package: pkg)
 } else if  CommandLine.commands[0] == "get"{
-    do {
-        try get(CommandLine.commands[1])
-    } catch {
-        print("Whoops an  error ouccured. \(error.localizedDescription)")
+    guard CommandLine.commands.count > 1 else {
+        print("Missing one argument 🍷🍷🍷🍷🍷")
+        exit(1)
     }
-    
+    try get(CommandLine.commands[1])
 } else {
     print("""
 Wine, A package manager
@@ -181,9 +191,11 @@ build: Builds and runs the installation commands. Does not build the dependecies
 install: Same thing as build but clones the git repo first. Unlike the other comands. it also installs all its dependecies.
 test: Same thing as build but runs the test commands not the installation commands.
 new: Creates a wine file for you with the template.
+get: Gets a package from the WInery
 To create a package your self, use the `new` command.
 Synopsis:
 wine [command] [arg].
+Use the command `vinager` to uninstall any Package!
 
 Jakob Neufeld
 
